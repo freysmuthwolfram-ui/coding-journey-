@@ -1,0 +1,180 @@
+import numpy as np
+
+# ==========================================
+# 1. Die Simplex-Funktion (Studenten-Version)
+# ==========================================
+def simplex(A, b, c, basis, pricing):
+    A = np.array(A, dtype=float)
+    b = np.array(b, dtype=float)
+    c = np.array(c, dtype=float)
+    m, n = A.shape
+    B = list(basis)
+    eps = 1e-9 
+    
+    for k in range(1000): # Max 1000 Iterationen
+        # --- Schritt 1 ---
+        N = [i for i in range(n) if i not in B]
+        A_B = A[:, B]
+        x_B = np.linalg.solve(A_B, b)
+        
+        x = np.zeros(n)
+        for i in range(m):
+            x[B[i]] = x_B[i]
+            
+        # --- Schritt 2 ---
+        c_B = c[B]
+        c_N = c[N]
+        A_N = A[:, N]
+        
+        y = np.linalg.solve(A_B.T, c_B)
+        c_tilde_N = c_N - A_N.T @ y
+        
+        # --- Schritt 3 & 4 ---
+        if np.all(c_tilde_N >= -eps):
+            B.sort()
+            return x, B
+            
+        # --- Schritt 6 ---
+        if pricing == 0:
+            min_idx = np.argmin(c_tilde_N)
+            r = N[min_idx]
+        elif pricing == 1:
+            r = -1
+            for i in range(len(N)):
+                if c_tilde_N[i] < -eps:
+                    r = N[i]
+                    break 
+                    
+        # --- Schritt 7 ---
+        a_r = A[:, r]
+        d = np.linalg.solve(A_B, a_r)
+        
+        # --- Schritt 8 & 9 ---
+        if np.all(d <= eps):
+            print("Problem ist unbeschränkt: STOP.")
+            return None, None
+            
+        # --- Schritt 11 ---
+        ratios = []
+        for i in range(m):
+            if d[i] > eps:
+                ratios.append(x_B[i] / d[i])
+            else:
+                ratios.append(np.inf)
+                
+        t_hat = np.min(ratios)
+        
+        kandidaten_fuer_s = []
+        for i in range(m):
+            if d[i] > eps and abs((x_B[i] / d[i]) - t_hat) < eps:
+                kandidaten_fuer_s.append(B[i])
+                
+        if pricing == 0:
+            s = kandidaten_fuer_s[0]
+        elif pricing == 1:
+            s = min(kandidaten_fuer_s)
+            
+        # --- Schritt 12, 13, 14 ---
+        for i in range(m):
+            if B[i] == s:
+                B[i] = r
+                break
+
+    print("Achtung: Maximale Iterationszahl erreicht (Mögliches Kreisen/Cycling!).")
+    return x, B
+
+
+# ==========================================
+# 2. Testen der Aufgaben (a) bis (d)
+# ==========================================
+
+if __name__ == "__main__":
+    
+    # ---------------------------------------------------------
+    print("="*50)
+    print("Aufgabenteil (a): Übungsaufgabe 21")
+    print("="*50)
+    # Umwandlung in Standardform mit Schlupfvariablen x3, x4
+    A_a = [
+        [1, -1, 1, 0],
+        [1, -3, 0, 1]
+    ]
+    b_a = [3, 1]
+    c_a = [3, 1, 0, 0]
+    
+    # Startbasis B = {1, 2} -> in Python: [0, 1]
+    basis_a = [0, 1]
+    
+    x_a, B_a = simplex(A_a, b_a, c_a, basis_a, pricing=0)
+    if B_a is not None:
+        print(f"Optimale Lösung x: {np.round(x_a, 4)}")
+        print(f"Optimale Basis B : {[i + 1 for i in B_a]}")
+        print(f"Zielfunktionswert: {np.dot(c_a, x_a)}")
+
+    # ---------------------------------------------------------
+    print("\n" + "="*50)
+    print("Aufgabenteil (b): Übungsaufgabe 26")
+    print("="*50)
+    # Ist bereits in Standardform
+    A_b = [
+        [-2, -9,  1,  9, 1, 0],
+        [ 1,  3, -1, -6, 0, 3]
+    ]
+    b_b = [0, 0]
+    c_b = [-2, -3, 1, 12, 0, 0]
+    
+    # Startbasis B = {5, 6} -> in Python: [4, 5]
+    basis_b = [4, 5]
+    
+    x_b, B_b = simplex(A_b, b_b, c_b, basis_b, pricing=0)
+    if B_b is not None:
+        print(f"Optimale Lösung x: {np.round(x_b, 4)}")
+        print(f"Optimale Basis B : {[i + 1 for i in B_b]}")
+        print(f"Zielfunktionswert: {np.dot(c_b, x_b)}")
+
+    # ---------------------------------------------------------
+    print("\n" + "="*50)
+    print("Aufgabenteil (c): Mozart Problem (Example 3.7)")
+    print("="*50)
+    A_c = [
+        [1, 1, 1, 0, 0],
+        [2, 1, 0, 1, 0],
+        [1, 2, 0, 0, 1]
+    ]
+    b_c = [6, 11, 9]
+    c_c = [-9, -8, 0, 0, 0]
+    
+    # Startbasis B = {3, 4, 5} -> in Python: [2, 3, 4]
+    basis_c = [2, 3, 4]
+    
+    x_c, B_c = simplex(A_c, b_c, c_c, basis_c, pricing=0)
+    if B_c is not None:
+        print(f"Optimale Lösung x: {np.round(x_c, 4)}")
+        print(f"Optimale Basis B : {[i + 1 for i in B_c]}")
+        print(f"Zielfunktionswert: {np.dot(c_c, x_c)}")
+    
+    # ---------------------------------------------------------
+    print("\n" + "="*50)
+    print("Aufgabenteil (d): Beale's Counterexample")
+    print("="*50)
+    A_d = [
+        [1/4, -60, -1/25, 9, 1, 0, 0],
+        [1/2, -90, -1/50, 3, 0, 1, 0],
+        [0,     0,     1, 0, 0, 0, 1]
+    ]
+    b_d = [0, 0, 1]
+    c_d = [-3/4, 150, -1/50, 6, 0, 0, 0]
+    
+    # Startbasis B = {5, 6, 7} -> in Python: [4, 5, 6]
+    basis_d = [4, 5, 6]
+    
+    print("--- Test mit Dantzig-Regel (pricing=0) ---")
+    x_d0, B_d0 = simplex(A_d, b_d, c_d, basis_d, pricing=0)
+    
+    print("\n--- Test mit Bland's Regel (pricing=1) ---")
+    x_d1, B_d1 = simplex(A_d, b_d, c_d, basis_d, pricing=1)
+    if B_d1 is not None:
+        print(f"Optimale Lösung x: {np.round(x_d1, 4)}")
+        print(f"Optimale Basis B : {[i + 1 for i in B_d1]}")
+        print(f"Zielfunktionswert: {np.dot(c_d, x_d1)}")
+        
