@@ -27,3 +27,21 @@ b = ['x', 'y', 'z']
 z = list(zip(a, b))   # now z is a list, not an iterator
 print(*z)
 print(*z)  
+
+
+'''Exercise 3.3 — This snippet attempts to print the zipped pairs twice. Explain why the second
+print produces no output, and fix it:'''
+
+a = [1, 2, 3]
+b = ['x', 'y', 'z']
+z = zip(a, b)
+print(*z)
+print(*z)  # nothing prints!
+
+
+a = [1, 2, 3]
+b = ['x', 'y', 'z']
+z = list(zip(a, b))   # now z is a list, not an iterator
+print(*z)
+print(*z)  
+
