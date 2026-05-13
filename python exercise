@@ -45,3 +45,20 @@ z = list(zip(a, b))   # now z is a list, not an iterator
 print(*z)
 print(*z)  
 
+
+
+'''Exercise 2.1 — You are 
+given words = ['apple', 'banana', 'cherry', 'date']. 
+Without using indexing (no words[i]), produce the output:
+1. apple (5 letters)
+2. banana (6 letters)
+3. cherry (6 letters)
+4. date (4 letters)'''
+
+words = ['apple', 'banana', 'cherry', 'date']
+for i, fruit in enumerate(words, start=1):
+    letters = len(fruit)
+    print(f"{i}. {fruit} ({letters} letters)")
+    #print(f"{i}. {fruit} ({letters} letters)")
+#it_words = iter(words)
+#for i in zip5):
