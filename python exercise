@@ -7,6 +7,30 @@ print('Helloro World agin')
 print('hal')
 
 
+'''names = ['Alice', 'Bob', 'Charlie']
+ages = [30, 25, 35]
+cities = ['NYC', 'LA', 'Chicago']
+Produce a list of dictionaries like 
+[{'name': 'Alice', 'age': 30, 'city': 'NYC'}, ...]
+ using zip() only 
+ (no list comprehension shortcuts that bypass zip).'''
+
+
+names = ['Alice', 'Bob', 'Charlie']
+ages = [30, 25, 35]
+cities = ['NYC', 'LA', 'Chicago']
+
+dict_list = list()
+
+    
+for nam, ag, cit in zip(names, ages, cities):
+    dicti = {'name': nam, 'age': ag, 'city': cit}
+    dict_list.append(dicti)
+    
+
+print(dict_list)
+
+
 print('jallo')
 
 print('hal')
