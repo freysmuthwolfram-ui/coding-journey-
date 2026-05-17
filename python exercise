@@ -6,6 +6,39 @@ print('Helloro World agin')
 
 print('hal')
 
+'''Exercise 2.3 — A CSV file transactions.csv has 
+a column amount. 
+Using chunked reading with chunksize=1000, 
+find both the maximum single transaction 
+and the chunk number in which it appeared. 
+Use enumerate() on the chunked reader.'''
+
+
+
+#import pandas as pd
+#max_transaction = []
+
+#for chunk in enumerate(zip(pd.read_csv('transactions.csv', chunksize = 1000))):
+    #max_transaction.append(max(enumerate(chunk)))
+ #   max_transaction.append(max(chunk))
+  #  max_transaction.append(index(max(chunk)))
+
+#print(max_transaction)
+
+import pandas as pd
+
+max_amount = float('-inf')   # running max, starts at "nothing beats this from below"
+max_chunk = None             # which chunk number it came from
+
+for i, chunk in enumerate(pd.read_csv('transactions.csv', chunksize=1000), start=1):
+    chunk_max = chunk['amount'].max()
+    if chunk_max > max_amount:
+        max_amount = chunk_max
+        max_chunk = i
+
+print(f"Max transaction: {max_amount} (found in chunk {max_chunk})")
+
+
 
 '''names = ['Alice', 'Bob', 'Charlie']
 ages = [30, 25, 35]
