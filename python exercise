@@ -13,7 +13,7 @@ find both the maximum single transaction
 and the chunk number in which it appeared. 
 Use enumerate() on the chunked reader.'''
 
-
+print('hallo')
 
 #import pandas as pd
 #max_transaction = []
