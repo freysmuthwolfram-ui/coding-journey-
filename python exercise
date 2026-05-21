@@ -4,6 +4,23 @@ print('Hello World again')
 def add(a, b):
     return a + b
 
+'''Exercise 1.1 — 
+Given numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 
+use a list comprehension to create a new list 
+containing the cube of each number.'''
+
+numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+cub_num = [n**3 for n in numbers ]
+print(cub_num)
+
+
+cub_num = []
+for n in numbers: 
+    cub_num.append(n**3)
+
+
+
+
 print(add(2, 3))
 
 print('Hallo')
