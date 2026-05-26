@@ -257,3 +257,118 @@ if __name__ == "__main__":
         print(f"  eigene:    fun = {info['objective']:.4f}")
     except ImportError:
         print("  (scipy nicht verfügbar)")
+
+
+
+
+
+
+import numpy as np
+from scipy.sparse import bmat, eye, diags
+from scipy.sparse.linalg import spsolve
+
+
+def mehrotra(A, b, c, x0, lam0, s0, eps, M):
+    m, n = A.shape   # n hier = Anzahl Variablen (also 2n aus der Aufgabe...)
+    x = x0.copy()
+    lam = lam0.copy()
+    s = s0.copy()
+
+    eta = 0.99  # Dämpfung Schritt 9
+
+    for k in range(200):
+        # Schritt 2
+        mu = (x @ s) / n
+        rp = A @ x - b
+        rd = A.T @ lam + s - c
+
+        # Schritt 3
+        if np.linalg.norm(rp) < eps and np.linalg.norm(rd) < eps and mu < eps:
+            print(f"  k={k}: konvergiert, mu={mu:.2e}")
+            return x, lam, s
+
+        # Schritt 4
+        if np.linalg.norm(x) > M or np.linalg.norm(s) > M:
+            print(f"  k={k}: ABBRUCH, ||x||={np.linalg.norm(x):.1e}, ||s||={np.linalg.norm(s):.1e}")
+            return x, lam, s
+
+        # Schritt 5: KKT-System lösen (Prädiktor)
+        KKT = bmat([
+            [None, A.T, eye(n)],
+            [A, None, None],
+            [diags(s), None, diags(x)]
+        ], format='csc')
+
+        rhs = np.concatenate([-rd, -rp, -x*s])
+        delta = spsolve(KKT, rhs)
+        dxN = delta[:n]
+        dlN = delta[n:n+m]
+        dsN = delta[n+m:]
+
+        # Schritt 6: Maximale Schrittweiten
+        # x + alpha * dx >= 0  ->  alpha <= -x_i / dx_i  für dx_i < 0
+        ax = 1.0
+        for i in range(n):
+            if dxN[i] < 0:
+                ax = min(ax, -x[i] / dxN[i])
+        as_ = 1.0
+        for i in range(n):
+            if dsN[i] < 0:
+                as_ = min(as_, -s[i] / dsN[i])
+
+        # Schritt 7
+        mu_plus = (x + ax*dxN) @ (s + as_*dsN) / n
+        sigma = (mu_plus / mu)**3
+
+        # Schritt 8: Korrektor (gleiche Matrix, neue rechte Seite)
+        rhs2 = np.concatenate([-rd, -rp, -x*s + sigma*mu - dxN*dsN])
+        delta2 = spsolve(KKT, rhs2)
+        dxC = delta2[:n]
+        dlC = delta2[n:n+m]
+        dsC = delta2[n+m:]
+
+        # Schritt 9
+        ax = 1.0
+        for i in range(n):
+            if dxC[i] < 0:
+                ax = min(ax, -x[i] / dxC[i])
+        as_ = 1.0
+        for i in range(n):
+            if dsC[i] < 0:
+                as_ = min(as_, -s[i] / dsC[i])
+        ax *= eta
+        as_ *= eta
+
+        # Schritt 10
+        x = x + ax * dxC
+        lam = lam + as_ * dlC
+        s = s + as_ * dsC
+
+    print("  max iter erreicht")
+    return x, lam, s
+
+
+# Tests für n = 4, 8, 16, 32, 64
+np.random.seed(42)
+
+for n in [4, 8, 16, 32, 64]:
+    print(f"n = {n}:")
+    A_tilde = np.random.randn(n, n)
+    A = np.hstack([A_tilde, np.eye(n)])
+
+    b = np.ones(n)
+    c = np.zeros(2*n)
+    c[:n] = -1
+
+    # skalieren auf ||b||=||c||=1
+    b = b / np.linalg.norm(b)
+    c = c / np.linalg.norm(c)
+
+    x0 = np.ones(2*n)
+    s0 = np.ones(2*n)
+    lam0 = np.zeros(n)
+
+    x, lam, s = mehrotra(A, b, c, x0, lam0, s0, eps=1e-4, M=10000)
+    print(f"  c^T x = {c @ x:.4f}")
+    print(f"  ||Ax-b|| = {np.linalg.norm(A @ x - b):.2e}")
+    print()
