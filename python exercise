@@ -5,6 +5,8 @@ print('Hello World again')
 def add(a, b):
     return a + b
 
+print('Hallo')
+
 print('hallo')
 print('hallo')
 print('hhalo')
