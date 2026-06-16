@@ -2,6 +2,7 @@ print('Hello World')
 print('Hello World')
 print('Hello World')
 print('hallo')
+print('hallo')
 print('Hello World')
 print('Hello World again')
 def add(a, b):
